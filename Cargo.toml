@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 include_dir = "0.7.1"
 lazy_static = "1.4.0"
+itertools = "0.10.1"
+anyhow = "1.0.51"
 
 [[bin]]
 name = "day1"
