@@ -10,6 +10,8 @@ include_dir = "0.7.1"
 lazy_static = "1.4.0"
 itertools = "0.10.1"
 anyhow = "1.0.51"
+nom = "7.1.0"
+tap = "1.0.1"
 
 [[bin]]
 name = "day1"
