@@ -22,6 +22,8 @@ pub mod nom {
     };
     use std::fmt::Debug;
 
+    pub type ParseResult<'a, T> = IResult<&'a str, T, VerboseError<&'a str>>;
+
     pub fn parse_usize(s: &str) -> nom::IResult<&str, usize, nom::error::VerboseError<&str>> {
         u32.map(|n| n as usize).parse(s)
     }
