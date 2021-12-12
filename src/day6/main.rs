@@ -28,32 +28,69 @@ use anyhow::Context;
 use aoc2021::InputProvider;
 use include_dir::*;
 use itertools::Itertools;
+use std::str::FromStr;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day6/input");
 
-fn challenge_one(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+#[derive(Debug)]
+struct FastFishes([usize; 9]);
+
+impl FastFishes {
+    fn from_input(input: &[u8]) -> Self {
+        let mut counters = [0; 9];
+
+        for &i in input {
+            counters[i as usize] += 1;
+        }
+
+        Self(counters)
+    }
+
+    fn advance_day(&mut self) {
+        self.0.rotate_left(1);
+
+        self.0[6] += self.0[8];
+    }
 }
 
-fn challenge_two(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_one(input: &[u8]) -> anyhow::Result<usize> {
+    let mut fishes = FastFishes::from_input(input);
+
+    for _ in 0..80 {
+        fishes.advance_day();
+    }
+
+    Ok(fishes.0.iter().sum())
+}
+
+fn challenge_two(input: &[u8]) -> anyhow::Result<usize> {
+    let mut fishes = FastFishes::from_input(input);
+
+    for _ in 0..256 {
+        fishes.advance_day();
+    }
+
+    Ok(fishes.0.iter().sum())
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
+    let content: Vec<u8> = INPUT_DIR
         .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+        .context("reading content")?
+        .split(',')
+        .map(FromStr::from_str)
+        .try_collect()?;
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&content[..]).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&content[..]).context("challenge two")?
     );
 
     Ok(())
