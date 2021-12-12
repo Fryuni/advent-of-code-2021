@@ -31,29 +31,81 @@ use itertools::Itertools;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day7/input");
 
-fn challenge_one(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+struct PositionCounters(Vec<usize>);
+
+impl PositionCounters {
+    fn from_input(input: &[usize]) -> Self {
+        let max = input.iter().max().unwrap();
+        let mut counters = vec![0; *max + 1];
+
+        for i in input {
+            counters[*i] += 1;
+        }
+
+        PositionCounters(counters)
+    }
+
+    fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    fn iter(&self) -> impl Iterator<Item = usize> + '_ {
+        self.0.iter().copied()
+    }
 }
 
-fn challenge_two(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_one(input: &[usize]) -> anyhow::Result<usize> {
+    let positions = PositionCounters::from_input(input);
+
+    let mut costs = vec![0; positions.len()];
+
+    for (i, count) in positions.iter().enumerate() {
+        for (j, slot) in costs.iter_mut().enumerate() {
+            *slot += if i < j {
+                count * (j - i)
+            } else {
+                count * (i - j)
+            };
+        }
+    }
+
+    Ok(*costs.iter().min().unwrap())
+}
+
+fn challenge_two(input: &[usize]) -> anyhow::Result<usize> {
+    let positions = PositionCounters::from_input(input);
+
+    let mut costs = vec![0; positions.len()];
+
+    for (i, count) in positions.iter().enumerate() {
+        for (j, slot) in costs.iter_mut().enumerate() {
+            let distance = if i < j { j - i } else { i - j };
+
+            *slot += count * (distance + 1) * distance / 2;
+        }
+    }
+
+    Ok(*costs.iter().min().unwrap())
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
+    let content: Vec<usize> = INPUT_DIR
         .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+        .context("reading content")?
+        .split(',')
+        .map(str::parse)
+        .try_collect()?;
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&content).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&content).context("challenge two")?
     );
 
     Ok(())
