@@ -12,6 +12,7 @@ itertools = "0.10.1"
 anyhow = "1.0.51"
 nom = "7.1.0"
 tap = "1.0.1"
+arrayvec = "0.7.2"
 
 [[bin]]
 name = "day1"
