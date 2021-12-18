@@ -24,36 +24,83 @@
 
 //! Binary for solving day 10 of Advent of Code 2021
 
+use crate::input::{Bracket, LineResult};
 use anyhow::Context;
+use aoc2021::nom::parse_all;
 use aoc2021::InputProvider;
 use include_dir::*;
 use itertools::Itertools;
+use tap::{Pipe, Tap};
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day10/input");
 
-fn challenge_one(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+mod input;
+
+fn challenge_one(input: &input::Input) -> anyhow::Result<usize> {
+    Ok(input
+        .lines
+        .iter()
+        .map(input::Line::validate)
+        .filter_map(|result| match result {
+            LineResult::Ok => None,
+            LineResult::Incomplete { .. } => None,
+            LineResult::Corrupted { found, .. } => Some(found),
+        })
+        .map(|bracket| match bracket {
+            Bracket::CloseRound => 3,
+            Bracket::CloseSquare => 57,
+            Bracket::CloseCurly => 1197,
+            Bracket::CloseAngle => 25137,
+            _ => unreachable!("Opening brackets should not be unexpected"),
+        })
+        .sum())
 }
 
-fn challenge_two(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_two(input: &input::Input) -> anyhow::Result<usize> {
+    Ok(input
+        .lines
+        .iter()
+        .map(input::Line::validate)
+        .filter_map(|result| match result {
+            LineResult::Ok => None,
+            LineResult::Corrupted { .. } => None,
+            LineResult::Incomplete { missing_brackets } => Some(missing_brackets),
+        })
+        .map(|missing_brackets| {
+            missing_brackets
+                .into_iter()
+                .rev()
+                .fold(0, |acc, bracket| match bracket {
+                    Bracket::CloseRound => (acc * 5) + 1,
+                    Bracket::CloseSquare => (acc * 5) + 2,
+                    Bracket::CloseCurly => (acc * 5) + 3,
+                    Bracket::CloseAngle => (acc * 5) + 4,
+                    _ => unreachable!("Opening brackets should not be unexpected"),
+                })
+        })
+        .collect_vec()
+        .tap_mut(|result| result.sort_unstable())
+        .pipe(|result| result[(result.len() - 1) / 2]))
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
-        .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+    let data = parse_all(
+        input::Parser::parse_input,
+        INPUT_DIR
+            .get_input(&format!("{}.txt", name))
+            .context("reading content")?,
+    )?;
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&data).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&data).context("challenge two")?
     );
 
     Ok(())
