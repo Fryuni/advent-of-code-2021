@@ -13,6 +13,7 @@ anyhow = "1.0.51"
 nom = "7.1.0"
 tap = "1.0.1"
 arrayvec = "0.7.2"
+colored = "2.0.0"
 
 [[bin]]
 name = "day1"

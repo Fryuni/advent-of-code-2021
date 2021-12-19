@@ -23,43 +23,64 @@
  */
 
 //! Binary for solving day 11 of Advent of Code 2021
+#![feature(backtrace)]
 
 use anyhow::Context;
 use aoc2021::InputProvider;
 use include_dir::*;
-use itertools::Itertools;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day11/input");
 
-fn challenge_one(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+mod data;
+
+fn challenge_one(input: &data::State) -> anyhow::Result<usize> {
+    let mut input = input.clone();
+
+    let mut total_flahes = 0;
+
+    for _ in 0..100 {
+        total_flahes += input.advance_state();
+    }
+
+    Ok(total_flahes)
 }
 
-fn challenge_two(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_two(input: &data::State) -> anyhow::Result<usize> {
+    let mut input = input.clone();
+
+    for step in 1.. {
+        if input.advance_state() == 100 {
+            return Ok(step);
+        }
+    }
+
+    unreachable!("For loop should break with the answer")
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
-        .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+    let content = data::Parser::parse_input(
+        INPUT_DIR
+            .get_input(&format!("{}.txt", name))
+            .context("reading content")?,
+    )?;
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&content).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&content).context("challenge two")?
     );
 
     Ok(())
 }
 
 fn main() -> anyhow::Result<()> {
+    colored::control::set_override(true);
     process("sample").context("sample data")?;
     process("input").context("real data")?;
 
