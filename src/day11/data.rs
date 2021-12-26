@@ -74,7 +74,7 @@ impl State {
     fn flash(&mut self, x: usize, y: usize) {
         let level = self.energy[x][y];
 
-        if level < 10 || level >= Self::FLASHED {
+        if !(10..Self::FLASHED).contains(&level) {
             return;
         }
 

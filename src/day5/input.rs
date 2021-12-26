@@ -244,10 +244,10 @@ impl Display for Diagram {
             counters[point.1][point.0] += 1;
         }
 
-        for y in 0..=max_y {
-            for x in 0..=max_x {
-                if counters[y][x] > 0 {
-                    write!(f, "{}", counters[y][x])?;
+        for row in counters.iter() {
+            for &value in row.iter() {
+                if value > 0 {
+                    write!(f, "{}", value)?;
                 } else {
                     f.write_char('.')?;
                 }

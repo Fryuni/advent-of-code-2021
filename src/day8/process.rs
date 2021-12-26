@@ -138,7 +138,7 @@ impl EntryProcessor {
     ) -> [Option<usize>; N] {
         let mut result = [None; N];
 
-        for (i, &digit) in display.into_iter().enumerate() {
+        for (i, &digit) in display.iter().enumerate() {
             if let Some(value) = self.conclusions.check_pattern(digit) {
                 result[i] = Some(value as usize);
             }

@@ -31,7 +31,6 @@ use aoc2021::InputProvider;
 use arrayvec::ArrayVec;
 use include_dir::*;
 use itertools::Itertools;
-use std::convert::identity;
 
 mod input;
 mod process;

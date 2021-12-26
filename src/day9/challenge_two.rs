@@ -111,9 +111,9 @@ impl Controller {
     }
 }
 
-pub fn run(input: &Vec<Vec<u32>>) -> anyhow::Result<u32> {
+pub fn run(input: &[Vec<u32>]) -> anyhow::Result<u32> {
     let mut controller = Controller {
-        input: input.clone(),
+        input: input.to_owned(),
         counter: vec![vec![1; input[0].len()]; input.len()],
     };
 

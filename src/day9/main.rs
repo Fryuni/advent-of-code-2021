@@ -36,7 +36,7 @@ fn get_coordinates(x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
     (0..x).cartesian_product(0..y)
 }
 
-fn challenge_one(input: &Vec<Vec<u32>>) -> anyhow::Result<usize> {
+fn challenge_one(input: &[Vec<u32>]) -> anyhow::Result<usize> {
     let max_x = input.len();
     let max_y = input[0].len();
 

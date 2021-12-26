@@ -27,15 +27,14 @@
 use anyhow::Context;
 use aoc2021::InputProvider;
 use include_dir::*;
-use itertools::Itertools;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day18/input");
 
-fn challenge_one(input: &str) -> anyhow::Result<usize> {
+fn challenge_one(_input: &str) -> anyhow::Result<usize> {
     Ok(0)
 }
 
-fn challenge_two(input: &str) -> anyhow::Result<usize> {
+fn challenge_two(_input: &str) -> anyhow::Result<usize> {
     Ok(0)
 }
 
