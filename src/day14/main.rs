@@ -25,34 +25,75 @@
 //! Binary for solving day 14 of Advent of Code 2021
 
 use anyhow::Context;
+use aoc2021::nom::parse_all;
 use aoc2021::InputProvider;
 use include_dir::*;
+use itertools::Itertools;
+use std::collections::HashMap;
+use std::ops::AddAssign;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day14/input");
 
-fn challenge_one(_input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+mod data;
+
+fn extract_answer_from_counters(counters: HashMap<char, usize>) -> anyhow::Result<usize> {
+    counters
+        .into_iter()
+        .minmax_by(|(_, left), (_, right)| left.cmp(right))
+        .into_option()
+        .map(|((min_c, min_v), (max_c, max_v))| {
+            println!("Min: {}  Max: {}", min_c, max_c);
+
+            max_v - min_v
+        })
+        .ok_or(anyhow::anyhow!("No minmax found"))
 }
 
-fn challenge_two(_input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_one(input: &data::Data) -> anyhow::Result<usize> {
+    let mut polymer = input.template.clone();
+
+    for _ in 0..10 {
+        polymer.grow(&input.rules);
+    }
+
+    extract_answer_from_counters(polymer.elements().iter().copied().counts())
+}
+
+fn challenge_two(input: &data::Data) -> anyhow::Result<usize> {
+    let mut pair_counters = data::PairCounters::from(&input.template);
+
+    for _ in 0..40 {
+        pair_counters.project_growth(&input.rules);
+    }
+
+    let mut element_counters = pair_counters.into_element_counters();
+
+    element_counters
+        .entry(input.template.elements().last().copied().unwrap())
+        .or_default()
+        .add_assign(1);
+
+    extract_answer_from_counters(element_counters)
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
-        .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+    let data = parse_all(
+        data::parser::parse_input,
+        INPUT_DIR
+            .get_input(&format!("{}.txt", name))
+            .context("reading content")?,
+    )?;
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&data).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&data).context("challenge two")?
     );
 
     Ok(())
