@@ -25,35 +25,51 @@
 //! Binary for solving day 13 of Advent of Code 2021
 
 use anyhow::Context;
-use aoc2021::InputProvider;
 use include_dir::*;
-use itertools::Itertools;
+
+use aoc2021::nom::parse_all;
+use aoc2021::InputProvider;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day13/input");
 
-fn challenge_one(input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+mod data;
+
+fn challenge_one(input: &data::Data) -> anyhow::Result<usize> {
+    let folded_grid: data::Grid = input.fold_instructions[0].apply(&input.grid);
+
+    Ok(folded_grid.dots.len())
 }
 
-fn challenge_two(input: &str) -> anyhow::Result<usize> {
+fn challenge_two(input: &data::Data) -> anyhow::Result<usize> {
+    let mut grid: data::Grid = input.fold_instructions[0].apply(&input.grid);
+
+    for instruction in input.fold_instructions[1..].iter() {
+        grid = instruction.apply(&grid);
+    }
+
+    println!("{:?}", grid);
+
     Ok(0)
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
-        .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+    let data = parse_all(
+        data::parser::parse_input,
+        INPUT_DIR
+            .get_input(&format!("{}.txt", name))
+            .context("reading content")?,
+    )?;
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&data).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&data).context("challenge two")?
     );
 
     Ok(())
