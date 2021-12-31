@@ -26,19 +26,19 @@
 
 use anyhow::Context;
 use aoc2021::InputProvider;
+use aoc2021::{lazy_input, LazyInputProvider};
 use data::Grid;
-use include_dir::*;
 
 mod data;
 mod solution;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day15/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(15);
 
-fn challenge_one(input: &Grid) -> anyhow::Result<usize> {
-    Ok(solution::calculate_cost(input))
+fn challenge_one(input: &Grid) -> usize {
+    solution::calculate_cost(input)
 }
 
-fn challenge_two(input: &Grid) -> anyhow::Result<usize> {
+fn challenge_two(input: &Grid) -> usize {
     let grid_size = input.size();
     let mut expanded_grid = Grid::new(grid_size * 5);
 
@@ -50,27 +50,20 @@ fn challenge_two(input: &Grid) -> anyhow::Result<usize> {
         }
     }
 
-    Ok(solution::calculate_cost(&expanded_grid))
+    solution::calculate_cost(&expanded_grid)
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
     let grid = Grid::from_input(
         INPUT_DIR
             .get_input(&format!("{}.txt", name))
-            .context("reading content")?,
+            .context("reading content")?
+            .as_str(),
     );
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&grid).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&grid));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&grid).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&grid));
 
     Ok(())
 }

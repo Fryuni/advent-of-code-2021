@@ -27,12 +27,12 @@
 use anyhow::Context;
 use aoc2021::nom::parse_all;
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 use itertools::Itertools;
 use std::collections::HashMap;
 use std::ops::AddAssign;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day14/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(14);
 
 mod data;
 
@@ -81,7 +81,8 @@ fn process(name: &str) -> anyhow::Result<()> {
         data::parser::parse_input,
         INPUT_DIR
             .get_input(&format!("{}.txt", name))
-            .context("reading content")?,
+            .context("reading content")?
+            .as_str(),
     )?;
 
     println!(

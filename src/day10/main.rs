@@ -24,26 +24,25 @@
 
 //! Binary for solving day 10 of Advent of Code 2021
 
-use crate::input::{Bracket, LineResult};
 use anyhow::Context;
-use aoc2021::nom::parse_all;
-use aoc2021::InputProvider;
-use include_dir::*;
 use itertools::Itertools;
 use tap::{Pipe, Tap};
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day10/input");
+use aoc2021::{lazy_input, nom::parse_all, InputProvider, LazyInputProvider};
+
+use crate::input::{Bracket, LineResult};
+
+static INPUT_DIR: LazyInputProvider = lazy_input!(10);
 
 mod input;
 
-fn challenge_one(input: &input::Input) -> anyhow::Result<usize> {
-    Ok(input
+fn challenge_one(input: &input::Input) -> usize {
+    input
         .lines
         .iter()
         .map(input::Line::validate)
         .filter_map(|result| match result {
-            LineResult::Ok => None,
-            LineResult::Incomplete { .. } => None,
+            LineResult::Ok | LineResult::Incomplete { .. } => None,
             LineResult::Corrupted { found, .. } => Some(found),
         })
         .map(|bracket| match bracket {
@@ -53,17 +52,16 @@ fn challenge_one(input: &input::Input) -> anyhow::Result<usize> {
             Bracket::CloseAngle => 25137,
             _ => unreachable!("Opening brackets should not be unexpected"),
         })
-        .sum())
+        .sum()
 }
 
-fn challenge_two(input: &input::Input) -> anyhow::Result<usize> {
-    Ok(input
+fn challenge_two(input: &input::Input) -> usize {
+    input
         .lines
         .iter()
         .map(input::Line::validate)
         .filter_map(|result| match result {
-            LineResult::Ok => None,
-            LineResult::Corrupted { .. } => None,
+            LineResult::Ok | LineResult::Corrupted { .. } => None,
             LineResult::Incomplete { missing_brackets } => Some(missing_brackets),
         })
         .map(|missing_brackets| {
@@ -80,7 +78,7 @@ fn challenge_two(input: &input::Input) -> anyhow::Result<usize> {
         })
         .collect_vec()
         .tap_mut(|result| result.sort_unstable())
-        .pipe(|result| result[(result.len() - 1) / 2]))
+        .pipe(|result| result[(result.len() - 1) / 2])
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
@@ -88,20 +86,13 @@ fn process(name: &str) -> anyhow::Result<()> {
         input::Parser::parse_input,
         INPUT_DIR
             .get_input(&format!("{}.txt", name))
-            .context("reading content")?,
+            .context("reading content")?
+            .as_str(),
     )?;
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&data).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&data));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&data).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&data));
 
     Ok(())
 }

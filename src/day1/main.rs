@@ -26,10 +26,10 @@
 
 use anyhow::Context;
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 use itertools::Itertools;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day1/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(1);
 
 fn parse_input(input: &str) -> anyhow::Result<Vec<usize>> {
     input
@@ -65,13 +65,13 @@ fn process(name: &str) -> anyhow::Result<()> {
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&content).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&content).context("challenge two")?
     );
 
     Ok(())

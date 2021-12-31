@@ -26,11 +26,11 @@
 
 use anyhow::Context;
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 use itertools::Itertools;
 use std::str::FromStr;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day6/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(6);
 
 #[derive(Debug)]
 struct FastFishes([usize; 9]);
@@ -53,24 +53,24 @@ impl FastFishes {
     }
 }
 
-fn challenge_one(input: &[u8]) -> anyhow::Result<usize> {
+fn challenge_one(input: &[u8]) -> usize {
     let mut fishes = FastFishes::from_input(input);
 
     for _ in 0..80 {
         fishes.advance_day();
     }
 
-    Ok(fishes.0.iter().sum())
+    fishes.0.iter().sum()
 }
 
-fn challenge_two(input: &[u8]) -> anyhow::Result<usize> {
+fn challenge_two(input: &[u8]) -> usize {
     let mut fishes = FastFishes::from_input(input);
 
     for _ in 0..256 {
         fishes.advance_day();
     }
 
-    Ok(fishes.0.iter().sum())
+    fishes.0.iter().sum()
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
@@ -81,17 +81,9 @@ fn process(name: &str) -> anyhow::Result<()> {
         .map(FromStr::from_str)
         .try_collect()?;
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&content[..]).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&content[..]));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&content[..]).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&content[..]));
 
     Ok(())
 }

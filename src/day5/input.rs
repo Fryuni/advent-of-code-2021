@@ -25,16 +25,16 @@
 use aoc2021::nom::{parse_usize, ParseResult};
 use itertools::{EitherOrBoth, Itertools};
 use nom::error::VerboseError;
-use nom::{IResult, InputIter, InputLength, Parser};
+use nom::{IResult, InputIter, InputLength};
 use std::fmt::{Debug, Display, Formatter, Write};
 
-pub struct InputData {
+pub struct Data {
     pub lines: Vec<Line>,
 }
 
-pub struct InputParser;
+pub struct Parser;
 
-impl InputParser {
+impl Parser {
     fn point(input: &str) -> ParseResult<Point> {
         nom::combinator::map(
             nom::sequence::separated_pair(
@@ -57,10 +57,10 @@ impl InputParser {
         )(input)
     }
 
-    pub fn input(input: &str) -> ParseResult<InputData> {
+    pub fn input(input: &str) -> ParseResult<Data> {
         nom::combinator::map(
             nom::multi::separated_list1(nom::character::complete::newline, Self::line),
-            |lines| InputData { lines },
+            |lines| Data { lines },
         )(input)
     }
 }
@@ -244,7 +244,7 @@ impl Display for Diagram {
             counters[point.1][point.0] += 1;
         }
 
-        for row in counters.iter() {
+        for row in &counters {
             for &value in row.iter() {
                 if value > 0 {
                     write!(f, "{}", value)?;

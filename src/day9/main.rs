@@ -26,17 +26,17 @@
 
 use anyhow::Context;
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 use itertools::Itertools;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day9/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(9);
 
 /// Return an iterator over all the pairs of x, y coordinates of the given matrix
 fn get_coordinates(x: usize, y: usize) -> impl Iterator<Item = (usize, usize)> {
     (0..x).cartesian_product(0..y)
 }
 
-fn challenge_one(input: &[Vec<u32>]) -> anyhow::Result<usize> {
+fn challenge_one(input: &[Vec<u32>]) -> usize {
     let max_x = input.len();
     let max_y = input[0].len();
 
@@ -63,7 +63,7 @@ fn challenge_one(input: &[Vec<u32>]) -> anyhow::Result<usize> {
         }
     }
 
-    Ok(total_sum as usize)
+    total_sum as usize
 }
 
 mod challenge_two;
@@ -76,17 +76,9 @@ fn process(name: &str) -> anyhow::Result<()> {
         .map(|s| s.chars().map(|c| c.to_digit(10).unwrap()).collect_vec())
         .collect_vec();
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&content).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&content));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two::run(&content).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two::run(&content));
 
     Ok(())
 }

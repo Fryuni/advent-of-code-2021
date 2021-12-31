@@ -27,11 +27,11 @@
 
 use anyhow::{bail, Context, Error};
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 use itertools::Itertools;
 use std::str::FromStr;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day3/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(3);
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum State {
@@ -80,13 +80,13 @@ fn process(name: &str) -> anyhow::Result<()> {
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one::challenge_one(&input).context("challenge one")?
+        challenge_one::challenge_one(&input)
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two::challenge_two(&input).context("challenge two")?
+        challenge_two::challenge_two(&input)
     );
 
     Ok(())

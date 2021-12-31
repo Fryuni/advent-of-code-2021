@@ -53,24 +53,27 @@ impl Grid<Cost> {
     }
 
     fn propagate(&mut self) {
-        let max_size = self.size() as isize;
+        let max_size = self.size();
 
         let mut queue = VecDeque::new();
 
         queue.push_back((max_size - 1, max_size - 1));
 
         while let Some((x, y)) = queue.pop_front() {
-            let current_cost = self[(x as usize, y as usize)].total();
+            let current_cost = self[(x, y)].total();
 
-            for &(dx, dy) in &[(0, -1), (0, 1), (-1, 0), (1, 0)] {
-                let (nx, ny) = (x + dx, y + dy);
-
+            for (nx, ny) in [
+                (x, y.wrapping_sub(1)),
+                (x, y + 1),
+                (x.wrapping_sub(1), y),
+                (x + 1, y),
+            ] {
                 // Check bounds
-                if nx < 0 || ny < 0 || nx >= max_size || ny >= max_size {
+                if nx >= max_size || ny >= max_size {
                     continue;
                 }
 
-                let neighbor = &mut self[(nx as usize, ny as usize)];
+                let neighbor = &mut self[(nx, ny)];
 
                 if neighbor.apply_neighbor(current_cost) {
                     queue.push_back((nx, ny));

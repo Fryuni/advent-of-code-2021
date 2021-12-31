@@ -111,7 +111,7 @@ impl Controller {
     }
 }
 
-pub fn run(input: &[Vec<u32>]) -> anyhow::Result<u32> {
+pub fn run(input: &[Vec<u32>]) -> u32 {
     let mut controller = Controller {
         input: input.to_owned(),
         counter: vec![vec![1; input[0].len()]; input.len()],
@@ -127,7 +127,7 @@ pub fn run(input: &[Vec<u32>]) -> anyhow::Result<u32> {
 
     basin_sizes.sort_unstable();
 
-    Ok(basin_sizes.into_iter().rev().take(3).product())
+    basin_sizes.into_iter().rev().take(3).product()
 }
 
 impl Debug for Controller {
@@ -136,7 +136,7 @@ impl Debug for Controller {
         f.write_str("\n  input: ")?;
 
         // Write input as a matrix
-        for row in self.input.iter() {
+        for row in &self.input {
             f.write_str("\n    ")?;
             for value in row.iter() {
                 f.write_str(&format!("{:>4}", value))?;
@@ -148,7 +148,7 @@ impl Debug for Controller {
         f.write_str("\n  counter: ")?;
 
         // Write counter as a matrix
-        for row in self.counter.iter() {
+        for row in &self.counter {
             f.write_str("\n    ")?;
             for value in row.iter() {
                 f.write_str(&format!("{:>4}", value))?;

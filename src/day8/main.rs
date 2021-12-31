@@ -28,16 +28,16 @@
 use anyhow::Context;
 use aoc2021::nom::parse_all;
 use aoc2021::InputProvider;
+use aoc2021::{lazy_input, LazyInputProvider};
 use arrayvec::ArrayVec;
-use include_dir::*;
 use itertools::Itertools;
 
 mod input;
 mod process;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day8/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(8);
 
-fn challenge_one(input: &input::InputData) -> anyhow::Result<usize> {
+fn challenge_one(input: &input::Data) -> anyhow::Result<usize> {
     input
         .iter()
         .map(|entry| {
@@ -55,8 +55,8 @@ fn challenge_one(input: &input::InputData) -> anyhow::Result<usize> {
         .ok_or(anyhow::anyhow!("No patterns found"))
 }
 
-fn challenge_two(input: &input::InputData) -> anyhow::Result<usize> {
-    Ok(input
+fn challenge_two(input: &input::Data) -> usize {
+    input
         .iter()
         .map(|entry| {
             let mut processor = process::EntryProcessor::new(entry.patterns);
@@ -73,17 +73,21 @@ fn challenge_two(input: &input::InputData) -> anyhow::Result<usize> {
                 .into_iter()
                 .rev()
                 .enumerate()
-                .fold(0, |acc, (i, digit)| acc + digit * 10usize.pow(i as u32))
+                .fold(0, |acc, (i, digit)| {
+                    acc + digit * 10usize.pow(i.try_into().expect("i < 4"))
+                })
         })
-        .sum())
+        .sum()
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
-        .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
-
-    let data = parse_all(input::InputParser::parse_input, content)?;
+    let data = parse_all(
+        input::Parser::parse_input,
+        INPUT_DIR
+            .get_input(&format!("{}.txt", name))
+            .context("reading content")?
+            .as_str(),
+    )?;
 
     println!(
         "Challenge one ({}): {}",
@@ -91,11 +95,7 @@ fn process(name: &str) -> anyhow::Result<()> {
         challenge_one(&data).context("challenge one")?
     );
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&data).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&data));
 
     Ok(())
 }

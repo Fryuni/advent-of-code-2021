@@ -81,7 +81,7 @@ impl PairCounters {
     pub fn project_growth(&mut self, rules: &PolymerizationRules) {
         let mut new_counters: HashMap<(char, char), usize> = HashMap::with_capacity(self.0.len());
 
-        for (&(a, b), &count) in self.0.iter() {
+        for (&(a, b), &count) in &self.0 {
             if let Some(&extra) = rules.pairs.get(&(a, b)) {
                 new_counters
                     .entry((a, extra))
@@ -105,7 +105,7 @@ impl PairCounters {
     pub fn into_element_counters(self) -> HashMap<char, usize> {
         let mut counters: HashMap<char, usize> = HashMap::new();
 
-        for ((a, _), count) in self.0.into_iter() {
+        for ((a, _), count) in self.0 {
             counters.entry(a).or_default().add_assign(count);
         }
 
@@ -122,7 +122,7 @@ pub struct Data {
 impl Debug for Polymer {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("Polymer(")?;
-        for c in self.0.iter() {
+        for c in &self.0 {
             f.write_char(*c)?;
         }
         f.write_str(")")

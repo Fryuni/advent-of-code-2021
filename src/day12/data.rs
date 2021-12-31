@@ -79,7 +79,7 @@ impl<'a> CaveHandle<'a> {
         current_path: Vec<&'a str>,
     ) -> impl Iterator<Item = Vec<&'a str>> + 't {
         self.cave.edges.iter().flat_map(move |edge| {
-            let mut path = current_path.to_vec();
+            let mut path = current_path.clone();
 
             if edge == target {
                 path.push(edge);
@@ -117,7 +117,7 @@ impl<'a> CaveHandle<'a> {
         double_small_seen: bool,
     ) -> impl Iterator<Item = Vec<&'a str>> + 't {
         self.cave.edges.iter().flat_map(move |edge| {
-            let mut path = current_path.to_vec();
+            let mut path = current_path.clone();
 
             if edge == target {
                 path.push(edge);

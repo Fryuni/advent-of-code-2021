@@ -22,9 +22,9 @@
  * SOFTWARE.
  */
 
-use super::*;
+use super::{Itertools, Matrix, State};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum Criteria {
     Oxygen,
     CO2,
@@ -94,12 +94,10 @@ impl Criteria {
     }
 }
 
-pub fn challenge_two(input: &Matrix) -> anyhow::Result<usize> {
-    Ok({
-        let oxygen = Criteria::apply(Criteria::Oxygen, input);
+pub fn challenge_two(input: &Matrix) -> usize {
+    let oxygen = Criteria::apply(Criteria::Oxygen, input);
 
-        let carbon_dioxide = Criteria::apply(Criteria::CO2, input);
+    let carbon_dioxide = Criteria::apply(Criteria::CO2, input);
 
-        dbg!(oxygen) * dbg!(carbon_dioxide)
-    })
+    oxygen * carbon_dioxide
 }

@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-use super::*;
+use super::{Itertools, Matrix, State};
 
 #[derive(Debug)]
 struct StateCounter(Vec<usize>, Vec<usize>);
@@ -49,7 +49,7 @@ impl IntoIterator for StateCounter {
     }
 }
 
-pub fn challenge_one(input: &Matrix) -> anyhow::Result<usize> {
+pub fn challenge_one(input: &Matrix) -> usize {
     let mut counter = StateCounter::new(input.width);
 
     for v in &input.data {
@@ -64,11 +64,11 @@ pub fn challenge_one(input: &Matrix) -> anyhow::Result<usize> {
 
     for (offset, (zeros, ones)) in pairs.into_iter().rev().enumerate() {
         if ones > zeros {
-            gamma |= 1 << offset
+            gamma |= 1 << offset;
         } else {
-            epsilon |= 1 << offset
+            epsilon |= 1 << offset;
         }
     }
 
-    Ok(gamma * epsilon)
+    gamma * epsilon
 }

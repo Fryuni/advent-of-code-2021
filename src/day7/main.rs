@@ -25,11 +25,12 @@
 //! Binary for solving day 7 of Advent of Code 2021
 
 use anyhow::Context;
-use aoc2021::InputProvider;
-use include_dir::*;
 use itertools::Itertools;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day7/input");
+use aoc2021::InputProvider;
+use aoc2021::{lazy_input, LazyInputProvider};
+
+static INPUT_DIR: LazyInputProvider = lazy_input!(7);
 
 struct PositionCounters(Vec<usize>);
 
@@ -54,7 +55,7 @@ impl PositionCounters {
     }
 }
 
-fn challenge_one(input: &[usize]) -> anyhow::Result<usize> {
+fn challenge_one(input: &[usize]) -> usize {
     let positions = PositionCounters::from_input(input);
 
     let mut costs = vec![0; positions.len()];
@@ -69,10 +70,10 @@ fn challenge_one(input: &[usize]) -> anyhow::Result<usize> {
         }
     }
 
-    Ok(*costs.iter().min().unwrap())
+    *costs.iter().min().unwrap()
 }
 
-fn challenge_two(input: &[usize]) -> anyhow::Result<usize> {
+fn challenge_two(input: &[usize]) -> usize {
     let positions = PositionCounters::from_input(input);
 
     let mut costs = vec![0; positions.len()];
@@ -85,7 +86,7 @@ fn challenge_two(input: &[usize]) -> anyhow::Result<usize> {
         }
     }
 
-    Ok(*costs.iter().min().unwrap())
+    *costs.iter().min().unwrap()
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
@@ -96,17 +97,9 @@ fn process(name: &str) -> anyhow::Result<()> {
         .map(str::parse)
         .try_collect()?;
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&content).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&content));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&content).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&content));
 
     Ok(())
 }

@@ -28,24 +28,24 @@
 #![allow(unused)]
 
 use anyhow::{bail, Context, Error};
+use aoc2021::{lazy_input, LazyInputProvider};
 use aoc2021::{
     nom::{parse_all, parse_usize},
     InputProvider,
 };
-use include_dir::*;
 use itertools::Itertools;
 use nom::error::VerboseError;
 use nom::{Finish, InputIter, Parser, ToUsize};
 use tap::{Tap, TapFallible};
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day4/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(4);
 
 mod board;
 
 #[derive(Debug, Default)]
 struct InputData {
     chosen_numbers: Vec<usize>,
-    boards: Vec<board::BingoBoard>,
+    boards: Vec<board::Board>,
 }
 
 fn input_parser<'a>() -> impl nom::Parser<&'a str, InputData, VerboseError<&'a str>> {
@@ -53,7 +53,7 @@ fn input_parser<'a>() -> impl nom::Parser<&'a str, InputData, VerboseError<&'a s
         nom::sequence::separated_pair(
             nom::multi::separated_list1(nom::bytes::complete::tag(","), parse_usize),
             nom::multi::count(nom::character::complete::newline, 2),
-            nom::multi::separated_list1(nom::character::complete::newline, board::parse_board),
+            nom::multi::separated_list1(nom::character::complete::newline, board::parse),
         ),
         |(chosen_numbers, boards)| InputData {
             chosen_numbers,
@@ -63,10 +63,10 @@ fn input_parser<'a>() -> impl nom::Parser<&'a str, InputData, VerboseError<&'a s
 }
 
 fn challenge_one(input: &InputData) -> anyhow::Result<usize> {
-    let mut boards = input.boards.iter().cloned().collect_vec();
+    let mut boards = input.boards.iter().copied().collect_vec();
 
-    for &number in input.chosen_numbers.iter() {
-        for board in boards.iter_mut() {
+    for &number in &input.chosen_numbers {
+        for board in &mut boards {
             board.mark_value(number);
             if let Some(score) = board.winning_score() {
                 return Ok(score * number);
@@ -78,9 +78,9 @@ fn challenge_one(input: &InputData) -> anyhow::Result<usize> {
 }
 
 fn challenge_two(input: &InputData) -> anyhow::Result<usize> {
-    let mut boards = input.boards.iter().cloned().collect_vec();
+    let mut boards = input.boards.iter().copied().collect_vec();
 
-    for &number in input.chosen_numbers.iter() {
+    for &number in &input.chosen_numbers {
         boards.iter_mut().for_each(|board| board.mark_value(number));
 
         if boards.len() == 1 {
@@ -100,7 +100,7 @@ fn process(name: &str) -> anyhow::Result<()> {
         .get_input(&format!("{}.txt", name))
         .context("reading content")?;
 
-    let data = parse_all(input_parser(), content)?;
+    let data = parse_all(input_parser(), content.as_str())?;
 
     println!(
         "Challenge one ({}): {}",

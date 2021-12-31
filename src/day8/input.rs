@@ -24,36 +24,31 @@
 
 use aoc2021::nom::ParseResult;
 
-#[derive(Default, Debug, Eq, PartialEq, Copy, Clone)]
-pub struct DisplayState {
-    a: bool,
-    b: bool,
-    c: bool,
-    d: bool,
-    e: bool,
-    f: bool,
-    g: bool,
+#[repr(u8)]
+enum Segment {
+    A = 1 << 6,
+    B = 1 << 5,
+    C = 1 << 4,
+    D = 1 << 3,
+    E = 1 << 2,
+    F = 1 << 1,
+    G = 1 << 0,
 }
 
+#[derive(Default, Debug, Eq, PartialEq, Copy, Clone)]
+pub struct DisplayState(u8);
+
 impl DisplayState {
-    pub fn segment_count(&self) -> usize {
-        self.a as usize
-            + self.b as usize
-            + self.c as usize
-            + self.d as usize
-            + self.e as usize
-            + self.f as usize
-            + self.g as usize
+    pub fn segment_count(self) -> usize {
+        self.0.count_ones() as usize
     }
 
-    pub fn overlap_count(&self, other: &DisplayState) -> usize {
-        (self.a && other.a) as usize
-            + (self.b && other.b) as usize
-            + (self.c && other.c) as usize
-            + (self.d && other.d) as usize
-            + (self.e && other.e) as usize
-            + (self.f && other.f) as usize
-            + (self.g && other.g) as usize
+    pub fn overlap_count(self, other: DisplayState) -> usize {
+        (self.0 & other.0).count_ones() as usize
+    }
+
+    fn turn_on(&mut self, segment: Segment) {
+        self.0 |= segment as u8;
     }
 }
 
@@ -70,25 +65,25 @@ impl IntoIterator for DisplayPatterns {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct InputEntry {
+pub struct Entry {
     pub patterns: DisplayPatterns,
     pub digits: [DisplayState; 4],
 }
 
 #[derive(Debug, Clone)]
-pub struct InputData {
-    entries: Vec<InputEntry>,
+pub struct Data {
+    entries: Vec<Entry>,
 }
 
-impl InputData {
-    pub fn iter(&self) -> impl Iterator<Item = &InputEntry> {
+impl Data {
+    pub fn iter(&self) -> impl Iterator<Item = &Entry> {
         self.entries.iter()
     }
 }
 
-pub struct InputParser;
+pub struct Parser;
 
-impl InputParser {
+impl Parser {
     fn parse_display(s: &str) -> ParseResult<DisplayState> {
         nom::sequence::preceded(
             nom::character::complete::space0,
@@ -97,13 +92,13 @@ impl InputParser {
                 DisplayState::default,
                 |mut acc, c| {
                     match c {
-                        'a' => acc.a = true,
-                        'b' => acc.b = true,
-                        'c' => acc.c = true,
-                        'd' => acc.d = true,
-                        'e' => acc.e = true,
-                        'f' => acc.f = true,
-                        'g' => acc.g = true,
+                        'a' => acc.turn_on(Segment::A),
+                        'b' => acc.turn_on(Segment::B),
+                        'c' => acc.turn_on(Segment::C),
+                        'd' => acc.turn_on(Segment::D),
+                        'e' => acc.turn_on(Segment::E),
+                        'f' => acc.turn_on(Segment::F),
+                        'g' => acc.turn_on(Segment::G),
                         _ => unreachable!(),
                     }
                     acc
@@ -113,7 +108,7 @@ impl InputParser {
     }
 
     fn parse_digits<const N: usize>(s: &str) -> ParseResult<[DisplayState; N]> {
-        let mut digits = [Default::default(); N];
+        let mut digits = [DisplayState::default(); N];
 
         let result = nom::multi::fill(Self::parse_display, &mut digits)(s);
 
@@ -124,21 +119,21 @@ impl InputParser {
         nom::combinator::map(Self::parse_digits::<10>, DisplayPatterns)(s)
     }
 
-    fn parse_entry(s: &str) -> ParseResult<InputEntry> {
+    fn parse_entry(s: &str) -> ParseResult<Entry> {
         nom::combinator::map(
             nom::sequence::separated_pair(
                 Self::parse_patterns,
                 nom::bytes::complete::tag(" | "),
                 Self::parse_digits::<4>,
             ),
-            |(patterns, digits)| InputEntry { patterns, digits },
+            |(patterns, digits)| Entry { patterns, digits },
         )(s)
     }
 
-    pub fn parse_input(s: &str) -> ParseResult<InputData> {
+    pub fn parse_input(s: &str) -> ParseResult<Data> {
         nom::combinator::map(
             nom::multi::separated_list0(nom::character::complete::newline, Self::parse_entry),
-            |entries| InputData { entries },
+            |entries| Data { entries },
         )(s)
     }
 }
@@ -146,22 +141,11 @@ impl InputParser {
 #[test]
 fn parse_display() {
     assert_eq!(
-        InputParser::parse_display("abcdefg"),
-        Ok((
-            "",
-            DisplayState {
-                a: true,
-                b: true,
-                c: true,
-                d: true,
-                e: true,
-                f: true,
-                g: true,
-            }
-        ))
+        Parser::parse_display("abcdefg"),
+        Ok(("", DisplayState(0b0111_1111)))
     );
     assert_eq!(
-        InputParser::parse_display(""),
+        Parser::parse_display(""),
         Err(nom::Err::Error(nom::error::VerboseError {
             errors: vec![(
                 "",
@@ -174,46 +158,14 @@ fn parse_display() {
 #[test]
 fn parse_digits() {
     assert_eq!(
-        InputParser::parse_digits::<4>("abcdefg abcdefg abcdefg abcdefg"),
+        Parser::parse_digits::<4>("abcdefg abcdefg abcdefg abcdefg"),
         Ok((
             "",
             [
-                DisplayState {
-                    a: true,
-                    b: true,
-                    c: true,
-                    d: true,
-                    e: true,
-                    f: true,
-                    g: true,
-                },
-                DisplayState {
-                    a: true,
-                    b: true,
-                    c: true,
-                    d: true,
-                    e: true,
-                    f: true,
-                    g: true,
-                },
-                DisplayState {
-                    a: true,
-                    b: true,
-                    c: true,
-                    d: true,
-                    e: true,
-                    f: true,
-                    g: true,
-                },
-                DisplayState {
-                    a: true,
-                    b: true,
-                    c: true,
-                    d: true,
-                    e: true,
-                    f: true,
-                    g: true,
-                },
+                DisplayState(0b0111_1111),
+                DisplayState(0b0111_1111),
+                DisplayState(0b0111_1111),
+                DisplayState(0b0111_1111),
             ]
         ))
     );

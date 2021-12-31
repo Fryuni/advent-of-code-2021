@@ -25,10 +25,9 @@
 //! Binary for solving day 16 of Advent of Code 2021
 
 use anyhow::Context;
-use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, InputProvider, LazyInputProvider};
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day16/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(16);
 
 fn challenge_one(_input: &str) -> anyhow::Result<usize> {
     Ok(0)
@@ -46,13 +45,13 @@ fn process(name: &str) -> anyhow::Result<()> {
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&content).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&content).context("challenge two")?
     );
 
     Ok(())

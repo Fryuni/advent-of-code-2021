@@ -26,10 +26,10 @@
 
 use anyhow::{Context, Error};
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 use std::str::FromStr;
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day2/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(2);
 
 #[derive(Debug)]
 enum Instruction {
@@ -56,7 +56,7 @@ impl FromStr for Instruction {
     }
 }
 
-fn challenge_one(input: &[Instruction]) -> anyhow::Result<usize> {
+fn challenge_one(input: &[Instruction]) -> usize {
     let (h, v) = input
         .iter()
         .fold((0, 0), |(h, v), instruction| match instruction {
@@ -65,10 +65,10 @@ fn challenge_one(input: &[Instruction]) -> anyhow::Result<usize> {
             Instruction::Up(x) => (h, v - x),
         });
 
-    Ok(h * v)
+    h * v
 }
 
-fn challenge_two(input: &[Instruction]) -> anyhow::Result<usize> {
+fn challenge_two(input: &[Instruction]) -> usize {
     let (h, v, _) = input
         .iter()
         .fold((0, 0, 0), |(h, v, aim), instruction| match instruction {
@@ -77,7 +77,7 @@ fn challenge_two(input: &[Instruction]) -> anyhow::Result<usize> {
             Instruction::Up(x) => (h, v, aim - x),
         });
 
-    Ok(h * v)
+    h * v
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
@@ -87,17 +87,9 @@ fn process(name: &str) -> anyhow::Result<()> {
 
     let input: Vec<Instruction> = content.lines().map(str::parse).collect::<Result<_, _>>()?;
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&input).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&input));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&input).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&input));
 
     Ok(())
 }

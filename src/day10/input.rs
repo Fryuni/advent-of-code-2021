@@ -38,7 +38,7 @@ pub enum Bracket {
 }
 
 impl Bracket {
-    fn closing(&self) -> Option<Self> {
+    fn closing(self) -> Option<Self> {
         match self {
             Bracket::Round => Some(Bracket::CloseRound),
             Bracket::Curly => Some(Bracket::CloseCurly),

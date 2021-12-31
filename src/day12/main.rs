@@ -24,12 +24,12 @@
 
 //! Binary for solving day 12 of Advent of Code 2021
 
-use crate::data::*;
+use crate::data::CaveSystem;
 use anyhow::{anyhow, Context};
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day12/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(12);
 
 mod data;
 
@@ -53,7 +53,8 @@ fn process(name: &str) -> anyhow::Result<()> {
     let content = data::Parser::parse_input(
         INPUT_DIR
             .get_input(&format!("{}.txt", name))
-            .context("reading content")?,
+            .context("reading content")?
+            .as_str(),
     )?;
 
     println!(

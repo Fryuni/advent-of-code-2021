@@ -27,13 +27,13 @@
 
 use anyhow::Context;
 use aoc2021::InputProvider;
-use include_dir::*;
+use aoc2021::{lazy_input, LazyInputProvider};
 
-static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day11/input");
+static INPUT_DIR: LazyInputProvider = lazy_input!(11);
 
 mod data;
 
-fn challenge_one(input: &data::State) -> anyhow::Result<usize> {
+fn challenge_one(input: &data::State) -> usize {
     let mut input = input.clone();
 
     let mut total_flahes = 0;
@@ -42,15 +42,15 @@ fn challenge_one(input: &data::State) -> anyhow::Result<usize> {
         total_flahes += input.advance_state();
     }
 
-    Ok(total_flahes)
+    total_flahes
 }
 
-fn challenge_two(input: &data::State) -> anyhow::Result<usize> {
+fn challenge_two(input: &data::State) -> usize {
     let mut input = input.clone();
 
     for step in 1.. {
         if input.advance_state() == 100 {
-            return Ok(step);
+            return step;
         }
     }
 
@@ -61,20 +61,13 @@ fn process(name: &str) -> anyhow::Result<()> {
     let content = data::Parser::parse_input(
         INPUT_DIR
             .get_input(&format!("{}.txt", name))
-            .context("reading content")?,
+            .context("reading content")?
+            .as_str(),
     )?;
 
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one(&content).context("challenge one")?
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(&content));
 
-    println!(
-        "Challenge two ({}): {}",
-        name,
-        challenge_two(&content).context("challenge two")?
-    );
+    println!("Challenge two ({}): {}", name, challenge_two(&content));
 
     Ok(())
 }

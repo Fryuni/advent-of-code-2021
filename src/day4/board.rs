@@ -40,13 +40,13 @@ impl Default for CellState {
 }
 
 #[derive(Default, Clone, Copy)]
-pub struct BingoBoard {
+pub struct Board {
     values: [[usize; 5]; 5],
     state: [[CellState; 5]; 5],
 }
 
-pub fn parse_board(input: &str) -> nom::IResult<&str, BingoBoard, VerboseError<&str>> {
-    nom::combinator::map(parse_usize_matrix::<5, 5>, |matrix| BingoBoard {
+pub fn parse(input: &str) -> nom::IResult<&str, Board, VerboseError<&str>> {
+    nom::combinator::map(parse_usize_matrix::<5, 5>, |matrix| Board {
         values: matrix,
         state: Default::default(),
     })(input)
@@ -64,7 +64,7 @@ trait State {
     fn iter_rows(&self) -> Self::RowsIterator;
 }
 
-impl BingoBoard {
+impl Board {
     pub fn mark_value(&mut self, value: usize) {
         if let Some((row, col)) = self.find_value(value) {
             self.state[row][col] = CellState::Marked;
@@ -84,10 +84,10 @@ impl BingoBoard {
     }
 
     pub fn winning_score(&self) -> Option<usize> {
-        if !self.is_winner() {
-            None
-        } else {
+        if self.is_winner() {
             Some(self.current_score())
+        } else {
+            None
         }
     }
 
@@ -126,11 +126,11 @@ impl BingoBoard {
 
 #[test]
 fn clear_board() {
-    let board = BingoBoard::default();
+    let board = Board::default();
     assert_eq!(board.winning_score(), None);
 }
 
-impl Debug for BingoBoard {
+impl Debug for Board {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         f.write_str("BingoBoard {\n")?;
         f.write_str("  values: [\n")?;

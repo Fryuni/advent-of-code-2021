@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-use crate::input::*;
+use crate::input::{DisplayPatterns, DisplayState};
 use itertools::Itertools;
 
 /// Represent the deduced patterns of the display in order.
@@ -39,7 +39,7 @@ impl DisplayConclusion {
         self.0
             .iter()
             .find_position(|&&x| x == Some(state))
-            .map(|(i, _)| i as u8)
+            .map(|(i, _)| i.try_into().expect("digit out of range"))
     }
 
     fn get_pattern(&self, digit: usize) -> Option<DisplayState> {
@@ -56,7 +56,7 @@ impl EntryProcessor {
     pub fn new(input: DisplayPatterns) -> Self {
         Self {
             input,
-            conclusions: Default::default(),
+            conclusions: DisplayConclusion::default(),
         }
     }
 
@@ -75,17 +75,23 @@ impl EntryProcessor {
     /// Infers the patterns of 0, 6 and 9 from the trivial patterns.
     pub fn first_inference(&mut self) {
         // Get trivial patterns for matching
-        let one = self.conclusions.get_pattern(1).unwrap();
-        let four = self.conclusions.get_pattern(4).unwrap();
+        let one = self
+            .conclusions
+            .get_pattern(1)
+            .expect("pattern for digit one should already be known");
+        let four = self
+            .conclusions
+            .get_pattern(4)
+            .expect("pattern for digit four should already be known");
 
         let solved = self.solve_item(&|state| {
             if state.segment_count() != 6 {
                 return None;
             }
 
-            Some(if state.overlap_count(&one) == 1 {
+            Some(if state.overlap_count(one) == 1 {
                 6
-            } else if state.overlap_count(&four) == 3 {
+            } else if state.overlap_count(four) == 3 {
                 0
             } else {
                 9
@@ -97,17 +103,23 @@ impl EntryProcessor {
 
     pub fn second_inference(&mut self) {
         // Get trivial patterns for matching
-        let one = self.conclusions.get_pattern(1).unwrap();
-        let six = self.conclusions.get_pattern(6).unwrap();
+        let one = self
+            .conclusions
+            .get_pattern(1)
+            .expect("pattern for digit one should already be known");
+        let six = self
+            .conclusions
+            .get_pattern(6)
+            .expect("pattern for digit six should already be known");
 
         let solved = self.solve_item(&|state| {
             if state.segment_count() != 5 {
                 return None;
             }
 
-            Some(if state.overlap_count(&one) == 2 {
+            Some(if state.overlap_count(one) == 2 {
                 3
-            } else if state.overlap_count(&six) == 5 {
+            } else if state.overlap_count(six) == 5 {
                 5
             } else {
                 2

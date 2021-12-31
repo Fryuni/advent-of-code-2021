@@ -30,7 +30,7 @@ use nom::sequence::{preceded, separated_pair};
 
 use aoc2021::nom::{parse_usize, ParseResult};
 
-use super::*;
+use super::{Data, FoldInstruction, Grid, Point};
 
 fn parse_point(input: &str) -> ParseResult<Point> {
     map(

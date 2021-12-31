@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-use super::*;
+use super::{Data, Polymer, PolymerizationRules};
 use aoc2021::nom::ParseResult;
 use nom::bytes::complete::tag;
 use nom::character::complete::{alpha1, anychar, newline};
