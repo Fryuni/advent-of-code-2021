@@ -25,6 +25,7 @@
 //! Common utilities for the challenges
 
 use include_dir::{Dir, File};
+use std::ops::Sub;
 
 pub trait InputProvider {
     fn get_input(&self, name: &str) -> anyhow::Result<&'static str>;
@@ -35,6 +36,14 @@ impl InputProvider for Dir<'static> {
         self.get_file(name)
             .and_then(File::contents_utf8)
             .ok_or_else(|| anyhow::anyhow!("missing file"))
+    }
+}
+
+pub fn abs_diff<T: PartialOrd + Sub>(a: T, b: T) -> T::Output {
+    if a > b {
+        a - b
+    } else {
+        b - a
     }
 }
 

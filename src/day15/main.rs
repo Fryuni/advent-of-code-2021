@@ -26,39 +26,57 @@
 
 use anyhow::Context;
 use aoc2021::InputProvider;
+use data::Grid;
 use include_dir::*;
+
+mod data;
+mod solution;
 
 static INPUT_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/src/day15/input");
 
-fn challenge_one(_input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_one(input: &Grid) -> anyhow::Result<usize> {
+    Ok(solution::calculate_cost(input))
 }
 
-fn challenge_two(_input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_two(input: &Grid) -> anyhow::Result<usize> {
+    let grid_size = input.size();
+    let mut expanded_grid = Grid::new(grid_size * 5);
+
+    for y in 0..expanded_grid.size() {
+        for x in 0..expanded_grid.size() {
+            let offset = (x / grid_size) + (y / grid_size);
+
+            expanded_grid[(x, y)] = (input[(x % grid_size, y % grid_size)] + offset - 1) % 9 + 1;
+        }
+    }
+
+    Ok(solution::calculate_cost(&expanded_grid))
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
-    let content = INPUT_DIR
-        .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+    let grid = Grid::from_input(
+        INPUT_DIR
+            .get_input(&format!("{}.txt", name))
+            .context("reading content")?,
+    );
 
     println!(
         "Challenge one ({}): {}",
         name,
-        challenge_one(content).context("challenge one")?
+        challenge_one(&grid).context("challenge one")?
     );
 
     println!(
         "Challenge two ({}): {}",
         name,
-        challenge_two(content).context("challenge two")?
+        challenge_two(&grid).context("challenge two")?
     );
 
     Ok(())
 }
 
 fn main() -> anyhow::Result<()> {
+    colored::control::set_override(true);
     process("sample").context("sample data")?;
     process("input").context("real data")?;
 
