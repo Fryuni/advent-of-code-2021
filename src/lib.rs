@@ -84,7 +84,7 @@ pub mod nom {
     };
     use std::fmt::Debug;
 
-    pub type ParseResult<'a, T> = IResult<&'a str, T, VerboseError<&'a str>>;
+    pub type ParseResult<'a, T, I = &'a str> = IResult<I, T, VerboseError<I>>;
 
     /// Parses a u32 and casts it to a usize
     ///
