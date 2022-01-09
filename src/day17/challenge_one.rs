@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2021 Luiz Ferraz
+ * Copyright (c) 2022 Luiz Ferraz
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,33 +22,40 @@
  * SOFTWARE.
  */
 
-//! Binary for solving day 17 of Advent of Code 2021
+use crate::data::{Area, Probe};
+use aoc2021::binary_search_last;
 
-mod challenge_one;
-mod data;
+fn reaches_line(height: i64, v: i64) -> bool {
+    let discriminant = ((4 * v * (v + 1)) + 1 - (8 * height)) / 4;
 
-fn challenge_two(_input: data::Area) -> usize {
-    0
+    discriminant >= 0
 }
 
-fn process(name: &str, target_area: data::Area) {
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one::run(target_area)
-    );
+pub fn run(area: Area) -> i64 {
+    // The goal of this challenge is to find the maximum Y value that can be reached while still
+    // passing through the target area.
 
-    println!("Challenge two ({}): {}", name, challenge_two(target_area));
-}
+    let (yv, xv) = binary_search_last(|yv| {
+        if !reaches_line(area.bottom_right.1, yv) {
+            return None;
+        }
 
-fn main() {
-    process(
-        "sample",
-        data::Area::new(data::Point(20, -10), data::Point(30, -5)),
-    );
+        // println!("Testing Yv = {}", yv);
+        binary_search_last(|xv| {
+            if !reaches_line(area.top_left.0, xv) {
+                return None;
+            }
 
-    process(
-        "input",
-        data::Area::new(data::Point(253, 73), data::Point(280, -46)),
-    );
+            // println!("Testing Xv = {}", xv);
+
+            let probe = Probe::launch(xv, yv);
+
+            probe.intersects(area)
+        })
+        .ok()
+        .map(|(xv, _)| xv)
+    })
+    .expect("No solution found");
+
+    Probe::launch(xv, dbg!(yv)).vertical_apogee()
 }

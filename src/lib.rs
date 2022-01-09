@@ -71,6 +71,42 @@ pub fn abs_diff<T: PartialOrd + Sub>(a: T, b: T) -> T::Output {
     }
 }
 
+/// Binary search for the last number that matches the predicate
+///
+/// ## Errors
+///
+/// If no value below 1000 matches the predicate an error is returned for not finding a lower bound.
+/// If the first 32 powers of 2 offsets from the lower bound matches the predicate an error is returned for not finding an upper bound.
+pub fn binary_search_last<F, V>(test: F) -> anyhow::Result<(i64, V)>
+where
+    F: Fn(i64) -> Option<V>,
+{
+    // Find the initial bounds
+    let mut low = (0..1000)
+        .find(|&x| test(x).is_some())
+        .ok_or_else(|| anyhow::anyhow!("Could not find lower bound"))?;
+
+    let mut high = (0..32)
+        .map(|x| low.max(1) << x)
+        .find(|&x| test(x).is_none())
+        .ok_or_else(|| anyhow::anyhow!("Could not find upper bound"))?;
+
+    // Binary search the boundary of the test
+    loop {
+        let mid = (low + high) / 2;
+
+        if let Some(value) = test(mid) {
+            low = mid + 1;
+
+            if low == high {
+                return Ok((low, value));
+            }
+        } else {
+            high = mid;
+        }
+    }
+}
+
 pub mod nom {
     use nom::combinator::all_consuming;
     use nom::{
