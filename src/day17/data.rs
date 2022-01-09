@@ -42,17 +42,44 @@ impl Area {
     }
 
     pub fn contains(&self, p: Point) -> bool {
-        p.0 >= self.top_left.0
-            && p.0 <= self.bottom_right.0
-            && p.1 <= self.top_left.1
-            && p.1 >= self.bottom_right.1
+        self.x_range().contains(&p.0) && self.y_range().contains(&p.1)
+    }
+
+    #[inline]
+    pub fn min_x(&self) -> i64 {
+        self.top_left.0
+    }
+
+    #[inline]
+    pub fn max_x(&self) -> i64 {
+        self.bottom_right.0
+    }
+
+    #[inline]
+    pub fn x_range(&self) -> std::ops::RangeInclusive<i64> {
+        self.min_x()..=self.max_x()
+    }
+
+    #[inline]
+    pub fn min_y(&self) -> i64 {
+        self.bottom_right.1
+    }
+
+    #[inline]
+    pub fn max_y(&self) -> i64 {
+        self.top_left.1
+    }
+
+    #[inline]
+    pub fn y_range(&self) -> std::ops::RangeInclusive<i64> {
+        self.min_y()..=self.max_y()
     }
 }
 
 #[derive(Debug, Copy, Clone)]
 pub struct Probe {
     /// The velocity vector is defined by the point the vector touches starting from the origin.
-    launch_velocity: Point,
+    pub launch_velocity: Point,
 }
 
 impl Probe {
@@ -113,12 +140,11 @@ impl Probe {
     ///  Y(V) = V * V - (V ^ 2) / 2
     ///  Y(V) = (V ^ 2) / 2
     ///  ```
+    #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
     pub fn vertical_apogee(self) -> i64 {
-        let t = ((2 * self.launch_velocity.1) + 1) / 2;
-        i64::max(
-            self.vertical_position_at(t),
-            self.vertical_position_at(t + 1),
-        )
+        let v = self.launch_velocity.1 as f64;
+
+        ((v + 0.5).powi(2) / 2.).round() as i64
     }
 
     /// Calculate the value of the X coordinate after N steps starting with V horizontal speed.

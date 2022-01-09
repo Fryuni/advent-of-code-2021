@@ -24,19 +24,31 @@
 
 //! Binary for solving day 17 of Advent of Code 2021
 
-mod challenge_one;
 mod data;
+
+fn challenge_one(input: data::Area) -> i64 {
+    // After trying to solve this challenge with a purely algorithmic approach,
+    // and failing to find a solution, I finally gave up and decided to solve it analytically.
+
+    // The vertical trajectory of the probe over time is a parabola.
+    // The zeros of this parabola are the the origin (the starting point)
+    // and double the value of the velocity.
+    // When the velocity of the probe matches the maximum height of the area,
+    // the probe will hit the area exactly at the top. Any faster than that and it will
+    // miss the area skipping from above it to zero.
+    let max_vy = input.max_y().abs() - 1;
+
+    let probe = data::Probe::launch(0, max_vy);
+
+    probe.vertical_apogee()
+}
 
 fn challenge_two(_input: data::Area) -> usize {
     0
 }
 
 fn process(name: &str, target_area: data::Area) {
-    println!(
-        "Challenge one ({}): {}",
-        name,
-        challenge_one::run(target_area)
-    );
+    println!("Challenge one ({}): {}", name, challenge_one(target_area));
 
     println!("Challenge two ({}): {}", name, challenge_two(target_area));
 }
