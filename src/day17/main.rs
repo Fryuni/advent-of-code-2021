@@ -23,6 +23,9 @@
  */
 
 //! Binary for solving day 17 of Advent of Code 2021
+#![allow(dead_code)]
+
+use itertools::Itertools;
 
 mod data;
 
@@ -43,8 +46,18 @@ fn challenge_one(input: data::Area) -> i64 {
     probe.vertical_apogee()
 }
 
-fn challenge_two(_input: data::Area) -> usize {
-    0
+fn challenge_two(input: data::Area) -> usize {
+    let max_x = input.max_x();
+    let max_y = input.max_y().abs().max(input.min_y().abs());
+
+    (0..=max_x)
+        .cartesian_product(-max_y..=max_y)
+        .filter_map(|(x, y)| {
+            let probe = data::Probe::launch(x, y);
+
+            probe.intersects(input).map(|time| (probe, time))
+        })
+        .count()
 }
 
 fn process(name: &str, target_area: data::Area) {
@@ -61,6 +74,6 @@ fn main() {
 
     process(
         "input",
-        data::Area::new(data::Point(253, 73), data::Point(280, -46)),
+        data::Area::new(data::Point(253, -73), data::Point(280, -46)),
     );
 }

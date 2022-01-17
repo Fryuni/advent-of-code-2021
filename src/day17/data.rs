@@ -22,7 +22,7 @@
  * SOFTWARE.
  */
 
-use aoc2021::binary_search_last;
+use itertools::{Itertools, MinMaxResult};
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub struct Point(pub i64, pub i64);
@@ -147,6 +147,31 @@ impl Probe {
         ((v + 0.5).powi(2) / 2.).round() as i64
     }
 
+    /// Calculate the maximum X coordinate reachable by the probe.
+    ///
+    /// Differentiating the equation of the Y coordinate with respect to time, we get:
+    ///  ```text
+    ///  X = V * t - (t ^ 2) / 2
+    ///  X' = V - t
+    ///  ```
+    ///
+    /// The inflection point of the horizontal trajectory happens at the zero of its derivative.
+    ///  ```text
+    ///  X'(t) = 0 => 0 = V - t => t = V
+    ///  ```
+    ///
+    /// The maximum X coordinate is the value of the vertical trajectory at the inflection point.
+    ///  ```text
+    ///  X(V) = V * V - (V ^ 2) / 2
+    ///  X(V) = (V ^ 2) / 2
+    ///  ```
+    #[allow(clippy::cast_precision_loss, clippy::cast_possible_truncation)]
+    pub fn horizontal_apogee(self) -> i64 {
+        let v = self.launch_velocity.0 as f64;
+
+        ((v + 0.5).powi(2) / 2.).round() as i64
+    }
+
     /// Calculate the value of the X coordinate after N steps starting with V horizontal speed.
     ///
     /// Considering:
@@ -165,17 +190,88 @@ impl Probe {
         v.signum() * (((2 * v.abs() + 1) * n) - (n * n)) / 2
     }
 
-    pub fn intersects(&self, area: Area) -> Option<Point> {
-        binary_search_last(|time| {
-            let position = self.get_position(time);
+    pub fn intersects(&self, area: Area) -> Option<usize> {
+        if self.vertical_apogee() < area.min_y() || self.horizontal_apogee() < area.min_x() {
+            // Probe does not reach the area.
+            return None;
+        }
 
+        if self.launch_velocity.0 > area.max_x() {
+            // Probe overshoots the area.
+            return None;
+        }
+
+        let mut time = 0;
+        let mut velocity = self.launch_velocity;
+        let mut position = Point(0, 0);
+
+        while (position.0 < area.min_x() && velocity.0 > 0)
+            || (position.1 < area.min_y() && velocity.1 > 0)
+            || (position.0 >= area.min_x() && position.1 >= area.min_y())
+        {
+            time += 1;
             if area.contains(position) {
-                Some(position)
-            } else {
-                None
+                return Some(time);
             }
-        })
-        .ok()
-        .map(|(_, position)| position)
+
+            position = Point(position.0 + velocity.0, position.1 + velocity.1);
+            velocity = Point(velocity.0.signum() * (velocity.0.abs() - 1), velocity.1 - 1);
+        }
+
+        None
+    }
+
+    pub fn get_trajectory(&self, time: usize) -> Vec<Point> {
+        let mut trajectory = Vec::new();
+        let mut velocity = self.launch_velocity;
+        let mut position = Point(0, 0);
+
+        for _ in 0..time {
+            trajectory.push(position);
+            position = Point(position.0 + velocity.0, position.1 + velocity.1);
+            velocity = Point(velocity.0.signum() * (velocity.0.abs() - 1), velocity.1 - 1);
+        }
+
+        trajectory
+    }
+
+    pub fn draw_trajectory<W>(&self, time: usize, area: Area, mut sink: W) -> std::io::Result<()>
+    where
+        W: std::io::Write,
+    {
+        writeln!(sink, "Launch velocity: {:?}", self.launch_velocity)?;
+
+        let trajectory = self.get_trajectory(time);
+
+        let max_x = trajectory
+            .iter()
+            .map(|&Point(x, _)| x)
+            .max()
+            .unwrap_or(0)
+            .max(area.max_x());
+
+        let (min_y, max_y) = match trajectory.iter().map(|&Point(_, y)| y).minmax() {
+            MinMaxResult::NoElements => (area.min_y(), area.max_y()),
+            MinMaxResult::OneElement(y) => (y.min(area.min_y()), y.max(area.max_y())),
+            MinMaxResult::MinMax(min, max) => (min.min(area.min_y()), max.max(area.max_y())),
+        };
+
+        for y in (min_y..=max_y).rev() {
+            for x in 0..=max_x {
+                let point = Point(x, y);
+
+                if trajectory.contains(&point) {
+                    write!(sink, "#")?;
+                } else if area.contains(point) {
+                    write!(sink, "T")?;
+                } else {
+                    write!(sink, ".")?;
+                }
+            }
+
+            writeln!(sink)?;
+        }
+
+        Ok(())
     }
 }
