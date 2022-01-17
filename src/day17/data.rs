@@ -82,6 +82,12 @@ pub struct Probe {
     pub launch_velocity: Point,
 }
 
+pub struct Moment {
+    pub time: i64,
+    pub position: Point,
+    pub velocity: Point,
+}
+
 impl Probe {
     pub fn launch(horizontal_velocity: i64, vertical_velocity: i64) -> Self {
         Self {
@@ -89,8 +95,8 @@ impl Probe {
         }
     }
 
-    pub fn horizontal_velocity(&self) -> i64 {
-        self.launch_velocity.0
+    pub fn horizontal_velocity(&self, time: i64) -> i64 {
+        0.max(self.launch_velocity.0 - time)
     }
 
     pub fn vertical_velocity(&self, time: i64) -> i64 {
@@ -196,52 +202,43 @@ impl Probe {
             return None;
         }
 
-        if self.launch_velocity.0 > area.max_x() {
-            // Probe overshoots the area.
-            return None;
-        }
-
-        let mut time = 0;
-        let mut velocity = self.launch_velocity;
-        let mut position = Point(0, 0);
-
-        while (position.0 < area.min_x() && velocity.0 > 0)
-            || (position.1 < area.min_y() && velocity.1 > 0)
-            || (position.0 >= area.min_x() && position.1 >= area.min_y())
-        {
-            time += 1;
-            if area.contains(position) {
-                return Some(time);
-            }
-
-            position = Point(position.0 + velocity.0, position.1 + velocity.1);
-            velocity = Point(velocity.0.signum() * (velocity.0.abs() - 1), velocity.1 - 1);
-        }
-
-        None
+        self.get_trajectory()
+            .take_while(
+                |Moment {
+                     position, velocity, ..
+                 }| {
+                    // Reaching the X coordinate of the area.
+                    (position.0 < area.min_x() && velocity.0 > 0)
+                        // Reaching the Y coordinate of the area.
+                        || (position.1 < area.min_y() && velocity.1 > 0)
+                        // Leaving the area.
+                        || (position.0 >= area.min_x() && position.1 >= area.min_y())
+                },
+            )
+            .find(|&Moment { position, .. }| area.contains(position))
+            .and_then(|Moment { time, .. }| usize::try_from(time).ok())
     }
 
-    pub fn get_trajectory(&self, time: usize) -> Vec<Point> {
-        let mut trajectory = Vec::new();
-        let mut velocity = self.launch_velocity;
-        let mut position = Point(0, 0);
-
-        for _ in 0..time {
-            trajectory.push(position);
-            position = Point(position.0 + velocity.0, position.1 + velocity.1);
-            velocity = Point(velocity.0.signum() * (velocity.0.abs() - 1), velocity.1 - 1);
-        }
-
-        trajectory
+    pub fn get_trajectory(&self) -> impl Iterator<Item = Moment> + '_ {
+        (0..).map(|time| Moment {
+            time,
+            position: self.get_position(time),
+            velocity: Point(self.horizontal_velocity(time), self.vertical_velocity(time)),
+        })
     }
 
+    #[allow(dead_code)]
     pub fn draw_trajectory<W>(&self, time: usize, area: Area, mut sink: W) -> std::io::Result<()>
     where
         W: std::io::Write,
     {
         writeln!(sink, "Launch velocity: {:?}", self.launch_velocity)?;
 
-        let trajectory = self.get_trajectory(time);
+        let trajectory = self
+            .get_trajectory()
+            .take(time)
+            .map(|Moment { position, .. }| position)
+            .collect_vec();
 
         let max_x = trajectory
             .iter()

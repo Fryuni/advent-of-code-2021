@@ -23,7 +23,6 @@
  */
 
 //! Binary for solving day 17 of Advent of Code 2021
-#![allow(dead_code)]
 
 use itertools::Itertools;
 
