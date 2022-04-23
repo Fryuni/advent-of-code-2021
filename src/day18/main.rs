@@ -24,24 +24,57 @@
 
 //! Binary for solving day 18 of Advent of Code 2021
 
-use anyhow::Context;
+#![feature(box_patterns)]
+
+use crate::data::parsing::parse_many;
+use crate::data::Element;
+use anyhow::{anyhow, Context};
+use aoc2021::nom::parse_all;
 use aoc2021::InputProvider;
 use aoc2021::{lazy_input, LazyInputProvider};
+use rayon::prelude::*;
 
 static INPUT_DIR: LazyInputProvider = lazy_input!(18);
 
-fn challenge_one(_input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+mod data;
+
+fn challenge_one(input: &[Element]) -> anyhow::Result<i64> {
+    // Get the magnitude of the summation of all the elements
+    input
+        .iter()
+        .cloned()
+        .reduce(std::ops::Add::add)
+        .ok_or_else(|| anyhow!("No elements provided"))
+        .map(|element| element.magnitude())
 }
 
-fn challenge_two(_input: &str) -> anyhow::Result<usize> {
-    Ok(0)
+fn challenge_two(input: &[Element]) -> anyhow::Result<i64> {
+    // Get the maximum magnitude possible, adding just two of the elements
+
+    input
+        .into_par_iter()
+        .enumerate()
+        .flat_map(|(left_index, left)| {
+            input
+                .into_par_iter()
+                .enumerate()
+                .filter_map(move |(right_index, right)| {
+                    if left_index == right_index {
+                        None
+                    } else {
+                        Some((left.clone() + right.clone()).magnitude())
+                    }
+                })
+        })
+        .max()
+        .ok_or_else(|| anyhow!("Could not compute maximum magnitude"))
 }
 
 fn process(name: &str) -> anyhow::Result<()> {
     let content = INPUT_DIR
         .get_input(&format!("{}.txt", name))
-        .context("reading content")?;
+        .context("reading content")
+        .and_then(|content| parse_all(parse_many, &content))?;
 
     println!(
         "Challenge one ({}): {}",
